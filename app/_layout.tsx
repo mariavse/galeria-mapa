@@ -1,22 +1,23 @@
-import { initDatabase } from '@/database/db';
-import { MaterialIcons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
-import { useEffect } from 'react';
+import {initDatabase} from '@/database/db';
+import {MaterialIcons} from '@expo/vector-icons';
+import {Tabs} from 'expo-router';
+import {useEffect} from 'react';
 import 'react-native-reanimated';
 
 export default function RootLayout() {
   useEffect(() => {
     try {
       initDatabase();
+      console.log("Banco inicializado!");
     } catch (error) {
-      console.error('Erro ao inicializar banco de dados:', error);
+      console.error('Erro ao inicializar banco de dados:', error);   
     }
   }, []);
 
   return (
     <Tabs
       screenOptions={{
-        headerTintColor: '#007AFF',
+        headerTintColor: '#d09ef3',
       }}
     >
       <Tabs.Screen

@@ -1,55 +1,88 @@
-import { listPhotos } from '@/repositories/photoRepository';
+import { listPhotos, Photo } from '@/repositories/photoRepository';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
+import MapView, { Callout, Marker } from 'react-native-maps';
 
 export default function MapScreen() {
-	const [photos, setPhotos] = useState<any[]>([]);
-	const [loading, setLoading] = useState(true);
+  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [loading, setLoading] = useState(true);
 
-	const load = useCallback(() => {
-		try {
-			setLoading(true);
-			const data = listPhotos().filter((p: any) => p.latitude && p.longitude);
-			setPhotos(data);
-		} catch (err) {
-			console.error(err);
-		} finally {
-			setLoading(false);
-		}
-	}, []);
+  const load = useCallback(() => {
+    try {
+      setLoading(true);
+      const data = listPhotos().filter((p) => p.latitude && p.longitude);
+      setPhotos(data);
+    } catch (err) {
+      console.error("Erro ao carregar fotos:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-	useFocusEffect(
-		useCallback(() => {
-			load();
-		}, [load])
-	);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
-	if (loading) return (
-		<View style={styles.center}><ActivityIndicator size="large" color="#007AFF"/></View>
-	);
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
 
-	return (
-		<View style={styles.center}>
-			<Text style={styles.title}>Mapa não disponível na web</Text>
-			{photos.length > 0 ? (
-				photos.map((p) => (
-					<View key={p.id} style={styles.webItem}>
-						<Text style={styles.webTitle}>{p.title}</Text>
-						<Text>📍 {p.latitude?.toFixed(4)}, {p.longitude?.toFixed(4)}</Text>
-					</View>
-				))
-			) : (
-				<Text style={styles.subtitle}>Nenhuma foto com localização</Text>
-			)}
-		</View>
-	);
+  if (photos.length === 0) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.title}>Nenhuma foto com localização</Text>
+      </View>
+    );
+  }
+
+  const initialRegion = {
+    latitude: photos[0].latitude!,
+    longitude: photos[0].longitude!,
+    latitudeDelta: 0.1,
+    longitudeDelta: 0.1,
+  };
+
+  return (
+    <View style={styles.container}>
+      <MapView style={styles.map} initialRegion={initialRegion}>
+        {photos.map((p) => (
+          <Marker
+            key={p.id}
+            coordinate={{ latitude: p.latitude!, longitude: p.longitude! }}
+          >
+            <Callout>
+              <View style={styles.callout}>
+                <Image source={{ uri: p.image_uri }} style={styles.calloutImage} />
+                <View style={styles.calloutText}>
+                  <Text style={styles.calloutTitle}>{p.title}</Text>
+                  <Text style={styles.calloutDate}>
+                    {new Date(p.created_at).toLocaleDateString()}
+                  </Text>
+                </View>
+              </View>
+            </Callout>
+          </Marker>
+        ))}
+      </MapView>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-	center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-	title: { fontSize: 18, fontWeight: '600' },
-	subtitle: { color: '#666', marginTop: 8 },
-	webItem: { marginTop: 12, backgroundColor: '#f5f5f5', padding: 10, borderRadius: 8, width: '100%' },
-	webTitle: { fontWeight: '600' },
+  container: { flex: 1 },
+  map: { flex: 1 },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  title: { fontSize: 18, fontWeight: '600' },
+  callout: { flexDirection: 'row', width: 220 },
+  calloutImage: { width: 80, height: 80, borderRadius: 8 },
+  calloutText: { paddingLeft: 10, justifyContent: 'center', flexShrink: 1 },
+  calloutTitle: { fontWeight: '600' },
+  calloutDate: { color: '#666', marginTop: 4 },
 });
