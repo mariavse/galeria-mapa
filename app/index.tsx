@@ -41,7 +41,7 @@ export default function GaleriaScreen() {
     const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
     coords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
   } else {
-    Alert.alert("Permissão negada", "O mapa não estara disponível sem acesso a localização.");
+    Alert.alert("Permissão negada", "A imagem não estará disponível no mapa sem acesso a localização.");
   }
     setPendingPhoto({ uri, coords });
     setShowModal(true);
