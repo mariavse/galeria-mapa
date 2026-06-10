@@ -27,3 +27,4 @@ Permissões: galeria e localização (Android).
 
 Erros e mensagens são mostrados em português.
 
+O app não funciona no navegador
